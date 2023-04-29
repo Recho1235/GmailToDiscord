@@ -12,8 +12,6 @@ To use this script, you will need to have the following modules installed:
 
 You can install these modules using pip:
 
-sh
-
 pip install imaplib email requests html2text
 
 You will also need to provide the following information in the script:
@@ -33,8 +31,6 @@ Make sure to replace your-gmail-username with your Gmail username and your-gmail
 Usage
 
     Run the script using a Python interpreter:
-
-sh
 
 python gmail-to-discord.py
 

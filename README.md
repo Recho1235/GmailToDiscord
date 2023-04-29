@@ -16,8 +16,6 @@ pip install imaplib email requests html2text
 
 You will also need to provide the following information in the script:
 
-python
-
 # IMAP settings
 IMAP_SERVER = 'imap.gmail.com'
 IMAP_PORT = 993

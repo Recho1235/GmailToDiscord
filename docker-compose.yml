@@ -1,0 +1,12 @@
+version: '3'
+services:
+  gmailtodiscord:
+    image: recho1235/gmailtodiscord:latest
+    environment:
+    - IMAP_SERVER=imap.gmail.com
+    - IMAP_PORT=993
+    - IMAP_USERNAME=test@gmail.com
+    - IMAP_PASSWORD=apppassword
+    - KEYWORDS=key,words,here
+    - DISCORD_WEBHOOK_URL=discord/webhook/url/here
+    restart: unless-stopped

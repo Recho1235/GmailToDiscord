@@ -1,28 +1,42 @@
-Gmail to Discord
-This is a simple script that monitors a Gmail inbox for messages containing specific keywords, and then sends those messages to a Discord webhook.
+GmailToDiscord is a Python script that runs in the background and checks a Gmail account for new emails containing specific keywords. If a matching email is found, the script sends a message to a Discord channel using a webhook URL.
 
-Usage
-Make sure you have Docker installed on your system.
+The script is designed to run as a Docker container, which simplifies the installation and setup process. The container can be easily configured using environment variables.
 
-Clone this repository to your local machine:
-git clone https://github.com/recho1235/GmailToDiscord.git
+To use GmailToDiscord, follow these steps:
 
-Change into the GmailToDiscord directory:
-cd GmailToDiscord
-    
-Replace imap.gmail.com with your IMAP server, 993 with your IMAP port, test@gmail.com with your Gmail account, apppassword with your Gmail app password, key,words,here with the keywords you want to monitor, and discord/webhook/url/here with your Discord webhook URL.
+Clone the repository to your local machine.
 
-Start the Docker container:
+Create a Discord webhook URL for the channel you want to receive messages in. You can find instructions on how to create a webhook URL here.
 
-docker-compose up -d
-To check the logs, run:
+Create a new file called .env in the root of the project directory.
 
-docker-compose logs -f
-Press Ctrl + C to exit the logs.
+Set the following environment variables in the .env file:
 
-To stop the container, run:
+IMAP_SERVER: The hostname of the IMAP server (e.g. imap.gmail.com).
+IMAP_PORT: The port number of the IMAP server (e.g. 993 for Gmail).
+IMAP_USERNAME: The email address of the Gmail account to check.
+IMAP_PASSWORD: The app password to use for authentication (see these instructions for how to generate an app password).
+KEYWORDS: A comma-separated list of keywords to search for in the email subject and body.
+DISCORD_WEBHOOK_URL: The webhook URL to use for sending messages to Discord.
 
-docker-compose down
+Build the Docker image using the following command:
+
+docker build -t recho1235/gmailtodiscord:latest .
+Run the Docker container using the following command:
+
+docker run --env-file .env recho1235/gmailtodiscord:latest
+This will start the script running in the container.
+
+Environment Variables
+Here are the environment variables that can be set in the .env file:
+
+IMAP_SERVER: The hostname of the IMAP server (e.g. imap.gmail.com).
+IMAP_PORT: The port number of the IMAP server (e.g. 993 for Gmail).
+IMAP_USERNAME: The email address of the Gmail account to check.
+IMAP_PASSWORD: The app password to use for authentication (see these instructions for how to generate an app password).
+KEYWORDS: A comma-separated list of keywords to search for in the email subject and body.
+DISCORD_WEBHOOK_URL: The webhook URL to use for sending messages to Discord.
+Note that all of these environment variables are required for the script to work properly.
 
 License
 This project is licensed under the MIT License. See the LICENSE file for details.

@@ -5,19 +5,13 @@ Usage
 Make sure you have Docker installed on your system.
 
 Clone this repository to your local machine:
-
-bash
-Copy code
 git clone https://github.com/recho1235/GmailToDiscord.git
-Change into the GmailToDiscord directory:
 
-bash
-Copy code
+Change into the GmailToDiscord directory:
 cd GmailToDiscord
+
 Open the docker-compose.yml file in a text editor and set the environment variables to match your configuration:
 
-yaml
-Copy code
 version: '3'
 services:
   gmailtodiscord:
@@ -30,21 +24,20 @@ services:
     - KEYWORDS=key,words,here
     - DISCORD_WEBHOOK_URL=discord/webhook/url/here
     restart: unless-stopped
+    
 Replace imap.gmail.com with your IMAP server, 993 with your IMAP port, test@gmail.com with your Gmail account, apppassword with your Gmail app password, key,words,here with the keywords you want to monitor, and discord/webhook/url/here with your Discord webhook URL.
 
 Start the Docker container:
 
-Copy code
 docker-compose up -d
 To check the logs, run:
 
-Copy code
 docker-compose logs -f
 Press Ctrl + C to exit the logs.
 
 To stop the container, run:
 
-Copy code
 docker-compose down
+
 License
 This project is licensed under the MIT License. See the LICENSE file for details.

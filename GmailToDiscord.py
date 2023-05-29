@@ -1,79 +1,65 @@
 import imaplib
 import email
 import requests
-import html2text
-import time
+import yaml
+import re
+from email.header import decode_header
 
-# IMAP settings
-IMAP_SERVER = 'imap.gmail.com'
-IMAP_PORT = 993
-IMAP_USERNAME = 'your-username@gmail.com'
-IMAP_PASSWORD = 'your-app-password'
-KEYWORDS = 'your,keywords,here'
+# Load configuration from YAML file
+with open('config.yaml', 'r') as config_file:
+    config = yaml.safe_load(config_file)
 
-keywords_list = KEYWORDS.split(',')
-
-# Discord webhook settings
-DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/your/discord/webhook/url'
+# Extract configuration values
+IMAP_SERVER = config['IMAP_SERVER']
+IMAP_PORT = config['IMAP_PORT']
+IMAP_USERNAME = config['IMAP_USERNAME']
+IMAP_PASSWORD = config['IMAP_PASSWORD']
+DISCORD_WEBHOOK_URL = config['DISCORD_WEBHOOK_URL']
 
 # Connect to Gmail account via IMAP
 mail = imaplib.IMAP4_SSL(IMAP_SERVER, IMAP_PORT)
 mail.login(IMAP_USERNAME, IMAP_PASSWORD)
 mail.select('inbox')
 
-# Search for emails containing specified keywords
-while True:
-    typ, msgnums = mail.search(None, 'UNSEEN')
-    for msgnum in msgnums[0].split()[::-1]:  # reverse order to get oldest first
-        typ, msg_data = mail.fetch(msgnum, '(RFC822)')
+# Search for unseen emails
+typ, msgnums = mail.search(None, 'UNSEEN')
+for msgnum in msgnums[0].split()[::-1]:  # reverse order to get oldest first
+    typ, msg_data = mail.fetch(msgnum, '(RFC822)')
 
-        # Parse email and extract relevant information
-        msg = email.message_from_bytes(msg_data[0][1])
-        from_email = email.utils.parseaddr(msg['From'])[1]
-        subject = msg['Subject']
-        body = None
+    # Parse email
+    msg = email.message_from_bytes(msg_data[0][1])
+    from_email = email.utils.parseaddr(msg['From'])[1]
 
-        # Check for HTML or rich text body
-        for part in msg.walk():
-            content_type = part.get_content_type()
-            if content_type == 'text/plain':
-                # Plain text body
-                body = part.get_payload(decode=True).decode('iso-8859-1')
-                break
-            elif content_type == 'text/html':
-                # HTML body
-                html = part.get_payload(decode=True).decode()
-                h = html2text.HTML2Text()
-                h.ignore_links = True
-                body = h.handle(html)
-                break
+    # Decode the subject line
+    subject = decode_header(msg['Subject'])[0][0]
+    if isinstance(subject, bytes):
+        subject = subject.decode()
 
-        # If body is still None, use an empty string instead
-        if body is None:
-            body = ""
+    body = None
 
-        # Check if email contains any of the specified keywords
-        if not any(keyword in subject.lower() or keyword in body.lower() for keyword in keywords_list):
-            # Email does not contain any of the specified keywords, so skip it
-            continue
+    # Check for HTML or plain text body
+    for part in msg.walk():
+        content_type = part.get_content_type()
+        if content_type == 'text/plain' or content_type == 'text/html':
+            body = part.get_payload(decode=True).decode()
 
-        # Send email to Discord via webhook
-        data = {
-            'embeds': [
-                {
-                    'author': {
-                        'name': from_email,
-                        'icon_url': f'https://www.gravatar.com/avatar/{hash(from_email.lower())}?d=identicon'
-                    },
-                    'title': subject,
-                    'description': body,
-                    'color': 3066993
-                }
-            ]
-        }
-        response = requests.post(DISCORD_WEBHOOK_URL, json=data)
-        if response.status_code != 204:
-            print(f'Error sending message to Discord webhook: {response.text}')
+            # Extract links containing "https://www.spigotmc.org/resources/" and the word "update"
+            links = re.findall(r'(https?://www.spigotmc.org/resources/\S*update\S*)', body)
+            link_content = '\n'.join(links)
 
-    # Wait 1800 seconds before checking for new mail again
-    time.sleep(1800)
+    # Prepare the rich embed content
+    embed_content = {
+        "title": f"Plugin Updated! - {subject}",
+        "description": f"From: {from_email}\n\n{link_content}"
+    }
+
+    # Send email content to Discord via webhook
+    data = {
+        'embeds': [embed_content]
+    }
+    response = requests.post(DISCORD_WEBHOOK_URL, json=data)
+    if response.status_code != 204:
+        print(f'Error sending message to Discord webhook: {response.text}')
+
+# Close the IMAP connection
+mail.logout()

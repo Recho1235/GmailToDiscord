@@ -5,6 +5,11 @@ import yaml
 import re
 from email.header import decode_header
 
+import logging
+
+# Set up logging configuration
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # Load configuration from YAML file
 with open('config.yaml', 'r') as config_file:
     config = yaml.safe_load(config_file)

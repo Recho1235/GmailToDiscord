@@ -8,7 +8,7 @@ COPY GmailToDiscord.py /app/
 COPY config.yaml /app/
 
 # Install dependencies
-RUN pip3 install pyyaml
+RUN pip3 install pyyaml requests
 
 # Set environment variable
 ENV CONFIG_FILE=/app/config.yaml
